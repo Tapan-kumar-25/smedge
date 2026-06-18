@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "710862788479",
+    "project_id": "smedge-7e63d",
+    "storage_bucket": "smedge-7e63d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:710862788479:android:4994d86cf6e32a24676c4a",
+        "android_client_info": {
+          "package_name": "com.eateasy.smedge"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdbPthof4i0AZvZ5TEKkdcBrm34TdMLOo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
