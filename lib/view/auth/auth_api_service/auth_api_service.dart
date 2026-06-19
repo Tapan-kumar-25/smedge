@@ -34,10 +34,18 @@ abstract class AuthApiService {
   Future<SignupEmailModel> phoneVerify(@Body() Map<String, dynamic> body);
 
   @POST(ApiConstants.signUpUAEPassInitialize)
-  Future<dynamic> initiateKyc(@Body() Map<String, dynamic> body);
+  Future<UaePassModel> initiateKyc(@Body() Map<String, dynamic> body,
+  @Header("X-Device-Integrity") String integrity,
+  @Header("X-Device-Fingerprint") String deviceFingerprint,
+  @Header("X-Device-Platform") String devicePlatform,
+      );
 
   @POST(ApiConstants.signUpUAEPassComplete)
-  Future<dynamic> kycComplete(@Body() Map<String, dynamic> body);
+  Future<UAEPassCompleteModel> kycComplete(@Body() Map<String, dynamic> body,
+      @Header("X-Device-Integrity") String integrity,
+      @Header("X-Device-Fingerprint") String deviceFingerprint,
+      @Header("X-Device-Platform") String devicePlatform,
+      );
 
   @POST(ApiConstants.kycSkip)
   Future<SignupEmailModel> kycSkip(@Body() Map<String, dynamic> body);
@@ -77,6 +85,23 @@ abstract class AuthApiService {
       @Header("X-Device-Fingerprint") String deviceFingerprint,
       @Header("X-Device-Platform") String devicePlatform,
       );
+
+  @POST(ApiConstants.signInWithUAEPassInitiate)
+  Future<UaePassModel> signInWithUAEPass(
+      @Body() Map<String, dynamic> body,
+      @Header("X-Device-Integrity") String integrity,
+      @Header("X-Device-Fingerprint") String deviceFingerprint,
+      @Header("X-Device-Platform") String devicePlatform,
+      );
+
+  @POST(ApiConstants.signInWithUAEPassCompleted)
+  Future<UAEPassCompleteModel> signInWithUAEPassCompleted(
+      @Body() Map<String, dynamic> body,
+      @Header("X-Device-Integrity") String integrity,
+      @Header("X-Device-Fingerprint") String deviceFingerprint,
+      @Header("X-Device-Platform") String devicePlatform,
+      );
+
   /// Personal Details///
  @GET(ApiConstants.personalDetails)
   Future<PersonalDetailsModel> fetchPersonalDetails();

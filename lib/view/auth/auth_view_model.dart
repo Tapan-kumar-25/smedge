@@ -220,11 +220,11 @@ family<SignupEmailModel, Map<String, dynamic>>((ref, body)async{
 
 
 final uaePassVerification = FutureProvider.family.
-autoDispose<dynamic, String>((ref, signUpToken) async {
+autoDispose<UaePassModel, String>((ref, signUpToken) async {
   final authState = ref.watch(authProvider);
   final repository = ref.watch(authRepositoryProvider);
   try {
-    var response = repository.initiateKyc(signupSessionToken: signUpToken);
+    var response = await repository.initiateKyc(signupSessionToken: signUpToken);
     return response;
   } on AppException catch (e) {
     Utils.showSnackBar(authState.context, e.message, Colors.red);
@@ -234,6 +234,36 @@ autoDispose<dynamic, String>((ref, signUpToken) async {
     Utils.showSnackBar(authState.context, "Something went wrong", Colors.red);
 
     throw AppException(message: "Something went wrong", errorCode: "UNKNOWN");
+  }
+});
+
+final signUpUaePassCompleteProvider = FutureProvider.family.
+autoDispose<UAEPassCompleteModel, Map<String,dynamic>>((ref, body)async{
+  final authState = ref.watch(authProvider);
+  final repository = ref.watch(authRepositoryProvider);
+  try{
+    var response =await repository.kycComplete(body);
+    print("response ====== ]]] ==== ${response.data?.user}");
+    authState.setUAEPassCompleteData(response);
+    final token = response.data?.signupSessionToken;
+    if(token != null){
+      await SharedPreferenceUtils.setString(Strings.SIGNUP_SESSION, token);
+      // await  SharedPreferenceUtils.setString("SIGNUP_SESSION_EXPIRY", DateTime.now().toString());
+      Utils.showSnackBar(authState.context, "UAE pass Verification Completed", Colors.green);
+      await Utils.getSignUpSession();
+      authState.loadUAEPassCompleteData();
+      Navigator.pushReplacementNamed(authState.context, AppRoutes.companyDetails);
+    }
+    return response;
+  }on AppException catch(e){
+    authState.setError(e.message);
+    Utils.showErrorSnackBar(authState.context, e.message);
+    rethrow;
+  } catch (e) {
+    Utils.showErrorSnackBar(authState.context,"Something went wrong");
+    throw AppException(message: "Something went wrong", errorCode: "UNKNOWN");
+  } finally {
+    authState.setUaePassLoading(false);
   }
 });
 
@@ -595,6 +625,54 @@ autoDispose<UAEPassCompleteModel, Map<String,dynamic>>((ref, body)async{
       await Utils.getSignUpSession();
       authState.loadUAEPassCompleteData();
       Navigator.pushReplacementNamed(authState.context, AppRoutes.personalDetails);
+    }
+    return response;
+  }on AppException catch(e){
+    authState.setError(e.message);
+    Utils.showErrorSnackBar(authState.context, e.message);
+    rethrow;
+  } catch (e) {
+    Utils.showErrorSnackBar(authState.context,"Something went wrong");
+    throw AppException(message: "Something went wrong", errorCode: "UNKNOWN");
+  } finally {
+    authState.setUaePassLoading(false);
+  }
+});
+
+
+final signInWithUAEPassNotifier = FutureProvider.family.
+autoDispose<UaePassModel, Map<String,dynamic>>((ref, body)async{
+  final authState = ref.watch(authProvider);
+  final repository = ref.watch(authRepositoryProvider);
+  try{
+    var response =await repository.signInWithUaePass(body: body);
+    print("===== Response ===== $response } =======");
+    return response;
+  }on AppException catch(e){
+    authState.setError(e.message);
+    Utils.showErrorSnackBar(authState.context, e.message);
+    rethrow;
+  } catch (e) {
+    Utils.showErrorSnackBar(authState.context,"Something went wrong");
+    throw AppException(message: "Something went wrong", errorCode: "UNKNOWN");
+  } finally {
+    authState.setUaePassLoading(false);
+  }
+});
+
+final signInUaePassCompleteProvider = FutureProvider.family.
+autoDispose<UAEPassCompleteModel, Map<String,dynamic>>((ref, body)async{
+  final authState = ref.watch(authProvider);
+  final repository = ref.watch(authRepositoryProvider);
+  try{
+    var response =await repository.signInWithUaePassCompleted(body: body);
+    print("response ====== ]]] ==== ${response.data?.user}");
+    authState.setUAEPassCompleteData(response);
+    final token = response.data?.signupSessionToken;
+    if(token != null){
+      Utils.showSnackBar(authState.context, "UAE pass Verification Completed", Colors.green);
+      authState.loadUAEPassCompleteData();
+      Navigator.pushReplacementNamed(authState.context, AppRoutes.dashboard);
     }
     return response;
   }on AppException catch(e){

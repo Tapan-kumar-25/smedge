@@ -21,6 +21,9 @@ class ApiConstants {
  static const String signIn = "/auth/signin/password";
  static const String signInOtpVerification = "/auth/signin/email/verify";
  static const String signInOtpResend = "/auth/signin/otp/resend";
+ static const String signInWithUAEPassInitiate = "/auth/signin/uaepass/initiate";
+ static const String signInWithUAEPassCompleted = "/auth/signin/uaepass/complete";
+
 
  ///personal details///
  static const String personalDetails = "/profile/personal";

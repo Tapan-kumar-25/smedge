@@ -308,8 +308,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                     .text
                                     .trim(),
                                 "nationality": authState.nationality,
-                                "gender": "MALE",
-                                "date_of_birth": "1990-05-15",
+                                "gender": "",
+                                "date_of_birth": "",
                               };
                               _signUpNetworkCall(body);
                             }
