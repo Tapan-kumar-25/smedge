@@ -49,8 +49,9 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
         _onSmedgeDeepLink(uri);
       }
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async{
       ref.read(authProvider).setContext(context);
+      await Utils.getAllData();
     });
   }
 
@@ -71,7 +72,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
         return;
       }
 
-      final response = await ref.read(signUpWithUAEPassNotifier({}).future);
+      final response = await ref.read(signInWithUAEPassNotifier({"signin_session_token":Utils.signInToken}).future);
       _setupWebView(response.data.appUrl);
       _flowTimeout = Timer(_timeout, _onFlowTimeout);
     } catch (e) {
