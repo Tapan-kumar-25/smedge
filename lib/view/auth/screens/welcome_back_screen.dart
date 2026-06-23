@@ -72,7 +72,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
         return;
       }
 
-      final response = await ref.read(signInWithUAEPassNotifier({"signin_session_token":Utils.signInToken}).future);
+      final response = await ref.read(signInWithUAEPassNotifier({}).future);
       _setupWebView(response.data.appUrl);
       _flowTimeout = Timer(_timeout, _onFlowTimeout);
     } catch (e) {
@@ -403,7 +403,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                     ),
                     SizedBox(height: Numbers.DOUBLE_NUMBER_6),
                     Text(
-                      "Tapan",
+                      Utils.fullName,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.titleSmall,
                     ),

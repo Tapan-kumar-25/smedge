@@ -216,6 +216,17 @@ class AuthRepositoryImpl implements AuthRepository {
       throw ErrorHandler.handle(e);
     }
   }
+  @override
+  Future<dynamic> signUpUaePassSetPassword({
+    required Map<String, dynamic> body,
+  }) async {
+    try {
+      final response = await apiService.setSignUpUaePassPassword(body);
+      return response;
+    } catch (e) {
+      throw ErrorHandler.handle(e);
+    }
+  }
 
 
   @override

@@ -8,6 +8,7 @@ class Strings {
   static final String IS_LOGIN = "is_login";
   static final String SIGN_IN_SESSION = "signin_session_token";
   static const String uaePassCompleteData = "uae_pass_complete_data";
+  static const String fullName = "full_name";
   //
 static final String SMART_FINANCIAL_SOLUTIONS = "Smart financial solutions for SMEs at every stage";
 static final String GET_ACCESS = "Get access to working capital based on your sale. Fast approvals, transparent terms, and flexible repayments designed for SMEs and merchants.";

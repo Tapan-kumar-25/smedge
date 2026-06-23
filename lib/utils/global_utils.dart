@@ -75,3 +75,5 @@ String getGreeting() {
     return "Good Evening";
   }
 }
+
+final List<String> genderList = ["MALE", "FEMALE", "OTHER"];

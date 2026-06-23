@@ -26,36 +26,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     await Utils.getSignUpSession();
     await Utils.getAllData();
     await Utils.getRefreshToken();
-    bool isLogin = SharedPreferenceUtils.getBool(Strings.IS_LOGIN);
-    if (Utils.refreshToken.isNotEmpty) {
-      print("splash =======");
-      try {
-        await ref.read(refreshTokenNotifier.future);
-        await Utils.getAllData();
-      } catch (e) {
-        await SharedPreferenceUtils.clear();
-      }
-    }
-    Future.delayed(Duration(seconds: 4)).then((value) {
+    Future.delayed(const Duration(seconds: 4), () {
       if (!mounted) return;
+
       Navigator.pushReplacementNamed(
         context,
-        isLogin == true ? AppRoutes.welcomeBack : AppRoutes.intro,
+        Utils.isLogin ? AppRoutes.welcomeBack : AppRoutes.intro,
       );
     });
+    if (Utils.refreshToken.isNotEmpty) {
+        ref.read(refreshTokenNotifier.future).then((_) async {
+          await Utils.getAllData();
+        });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final h = size.height;
-    final w = size.width;
     return Scaffold(
       body: SafeArea(
-        top: true,bottom: true,
+        top: true,bottom: true,left: true,right: true,
         child: SizedBox(
-          height: h,
-          width: w,
+          height: double.infinity,
+          width: double.infinity,
           child: Lottie.asset("assets/animation/splash_animation1.json"),
         ),
       ),

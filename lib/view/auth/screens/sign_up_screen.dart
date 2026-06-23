@@ -9,6 +9,7 @@ import 'package:smedge/common_files/utils.dart';
 import 'package:smedge/constants/numbers.dart';
 import 'package:smedge/constants/strings.dart';
 import 'package:smedge/provider/provider.dart';
+import 'package:smedge/utils/global_utils.dart';
 import 'package:smedge/view/auth/auth_view_model.dart';
 
 import '../../../common_files/network_checker.dart';
@@ -23,18 +24,13 @@ class SignUpScreen extends ConsumerStatefulWidget {
 }
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
-  bool isPasswordVisible = false;
-  bool isConfirmPasswordVisible = false;
-  bool hasMinLength = false;
-  bool hasUppercase = false;
-  bool hasDigit = false;
-  bool hasSpacialCharacter = false;
 
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final numberController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final dobController = TextEditingController();
 
   @override
   void initState() {
@@ -44,13 +40,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     Utils.getSignUpSession();
     super.initState();
     passwordController.addListener(() {
-      final value = passwordController.text;
-      setState(() {
-        hasMinLength = value.length >= 8;
-        hasUppercase = RegExp(r'[A-Z]').hasMatch(value);
-        hasDigit = RegExp(r'[0-9]').hasMatch(value);
-        hasSpacialCharacter = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value);
-      });
+      ref.read(authProvider).validatePassword(passwordController.text);
+    });
+    emailController.addListener(() {
+      ref.read(authProvider).setEmailError("");
+    });
+
+    numberController.addListener(() {
+      ref.read(authProvider).setPhoneError("");
     });
   }
 
@@ -157,26 +154,38 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 textType: TextInputType.emailAddress,
                 hint: 'Email',
               ),
+              if (authState.emailError !="") ...[
+                SizedBox(height: Numbers.DOUBLE_NUMBER_6),
+                Text(
+                  authState.emailError,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ],
               SizedBox(height: Numbers.DOUBLE_NUMBER_16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     flex: 3,
-                    child: CustomContainer(
-                      padding: 2,
-                      child: CountryCodePicker(
-                        padding: EdgeInsetsGeometry.zero,
-                        initialSelection: "+971",
-                        hideHeaderText: true,
-                        onChanged: (value) {
-                          authState.setCountryCode(value.dialCode ?? "+971");
-                          authState.setNationality(value.code ?? "AE");
-                        },
-                        flagDecoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(1),
+                    child: InkWell(
+                      onTap: (){
+                        checkEmailAvailability(emailController.text);
+                      },
+                      child: CustomContainer(
+                        padding: 2,
+                        child: CountryCodePicker(
+                          padding: EdgeInsetsGeometry.zero,
+                          initialSelection: "+971",
+                          hideHeaderText: true,
+                          onChanged: (value) {
+                            authState.setCountryCode(value.dialCode ?? "+971");
+                            authState.setNationality(value.code ?? "AE");
+                          },
+                          flagDecoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                          pickerStyle: PickerStyle.bottomSheet,
                         ),
-                        pickerStyle: PickerStyle.bottomSheet,
                       ),
                     ),
                   ),
@@ -184,6 +193,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   Expanded(
                     flex: 6,
                     child: _customTextField(
+                      onTap: (){
+                        checkEmailAvailability(emailController.text);
+                      },
                       context: context,
                       controller: numberController,
                       textType: TextInputType.number,
@@ -196,22 +208,113 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                 ],
               ),
+              if (authState.phoneError !="") ...[
+                SizedBox(height: Numbers.DOUBLE_NUMBER_6),
+                Text(
+                  authState.phoneError,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ],
+              SizedBox(height: Numbers.DOUBLE_NUMBER_16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: CustomContainer(
+                      padding: 2,
+                      child: DropdownButtonFormField<String>(
+                        initialValue: authState.selectedGender,
+                        style: theme.textTheme.titleMedium,
+                        decoration: InputDecoration(
+                          hintText: "Gender",
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
+                        ),
+                        items: genderList.map((gender) {
+                          return DropdownMenuItem<String>(
+                            value: gender,
+                            child: Text(gender),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            authState.setSelectedGender(value);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: Numbers.DOUBLE_NUMBER_10),
+                  Expanded(
+                    flex: 6,
+                    child: CustomContainer(
+                      padding: 2,
+                      child: TextFormField(
+                        controller: dobController,
+                        readOnly: true,
+                        style: theme.textTheme.titleMedium,
+                        decoration: InputDecoration(
+                          hintText: "DOB (yyyy-MM-dd)",
+                          hintStyle: theme.textTheme.bodySmall!.copyWith(
+                            fontSize: Numbers.DOUBLE_NUMBER_15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          suffixIcon: const Icon(Icons.calendar_today),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                        onTap: () async {
+                          checkPhoneAvailability("${authState.countryCode}${numberController.text}");
+                          final DateTime now = DateTime.now();
+                          final DateTime initialDate = DateTime(
+                            now.year - 18,
+                            now.month,
+                            now.day,
+                          );
+                          DateTime? pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: initialDate,
+                            firstDate: DateTime(1000),
+                            lastDate: DateTime.now(),
+                          );
+
+                          if (pickedDate != null) {
+                            setState(() {
+                              dobController.text =
+                                  "${pickedDate.year.toString().padLeft(4, '0')}-"
+                                  "${pickedDate.month.toString().padLeft(2, '0')}-"
+                                  "${pickedDate.day.toString().padLeft(2, '0')}";
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(height: Numbers.DOUBLE_NUMBER_16),
               _customTextField(
                 context: context,
                 controller: passwordController,
                 textType: TextInputType.emailAddress,
                 hint: "Password",
-                obscureText: !isPasswordVisible,
+                obscureText: !authState.isPasswordVisible,
                 alignment: TextAlignVertical.center,
                 suffixIcon: IconButton(
                   icon: Icon(
-                    isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    authState.isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                   ),
                   onPressed: () {
-                    setState(() {
-                      isPasswordVisible = !isPasswordVisible;
-                    });
+                    authState.togglePasswordVisibility();
                   },
                 ),
               ),
@@ -222,18 +325,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 controller: confirmPasswordController,
                 textType: TextInputType.emailAddress,
                 hint: "Confirm Password",
-                obscureText: !isConfirmPasswordVisible,
+                obscureText: !authState.isConfirmPasswordVisible,
                 alignment: TextAlignVertical.center,
                 suffixIcon: IconButton(
                   icon: Icon(
-                    isConfirmPasswordVisible
+                    authState.isConfirmPasswordVisible
                         ? Icons.visibility
                         : Icons.visibility_off,
                   ),
                   onPressed: () {
-                    setState(() {
-                      isConfirmPasswordVisible = !isConfirmPasswordVisible;
-                    });
+                    authState.toggleConfirmPasswordVisibility();
                   },
                 ),
               ),
@@ -244,12 +345,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     children: [
                       Expanded(
                         child: buildValidationItem(
-                          hasUppercase,
+                          authState.hasUppercase,
                           "One uppercase letter",
                         ),
                       ),
                       Expanded(
-                        child: buildValidationItem(hasDigit, "One digit"),
+                        child: buildValidationItem(
+                          authState.hasDigit,
+                          "One digit",
+                        ),
                       ),
                     ],
                   ),
@@ -258,13 +362,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     children: [
                       Expanded(
                         child: buildValidationItem(
-                          hasSpacialCharacter,
+                          authState.hasSpecialCharacter,
                           "One special character",
                         ),
                       ),
                       Expanded(
                         child: buildValidationItem(
-                          hasMinLength,
+                          authState.hasMinLength,
                           "At least 8 characters",
                         ),
                       ),
@@ -291,6 +395,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                               number: numberController.text,
                               password: passwordController.text,
                               confirmPassword: confirmPasswordController.text,
+                              gender: authState.selectedGender,
+                              dob: dobController.text,
                             );
                             if (isValid == true) {
                               authState.setSignUpData({
@@ -308,8 +414,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                     .text
                                     .trim(),
                                 "nationality": authState.nationality,
-                                "gender": "",
-                                "date_of_birth": "",
+                                "gender": authState.selectedGender,
+                                "date_of_birth": dobController.text,
                               };
                               _signUpNetworkCall(body);
                             }
@@ -359,6 +465,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     bool obscureText = false,
     Widget? suffixIcon,
     TextAlignVertical alignment = TextAlignVertical.top,
+    VoidCallback? onTap,
   }) {
     final theme = Theme.of(context);
     return CustomContainer(
@@ -366,6 +473,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: TextField(
+          onTap: onTap,
           autofocus: false,
           obscureText: obscureText,
           controller: controller,
@@ -414,6 +522,48 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ),
       ],
     );
+  }
+
+  Future<bool> checkEmailAvailability(String email) async {
+    final authState = ref.read(authProvider);
+
+    authState.setEmailError("");
+
+    try {
+      final response =
+      await ref.read(checkEmailNotifier(email.trim()).future);
+
+      if (response.data?.available == false) {
+        authState.setEmailError("Email already registered");
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      authState.setEmailError("Unable to verify email");
+      return false;
+    }
+  }
+
+  Future<bool> checkPhoneAvailability(String phone) async {
+    final authState = ref.read(authProvider);
+
+    authState.setPhoneError("");
+
+    try {
+      final response =
+      await ref.read(checkPhoneNotifier(phone).future);
+
+      if (response.data?.available == false) {
+        authState.setPhoneError("Phone number already registered");
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      authState.setPhoneError("Unable to verify phone number");
+      return false;
+    }
   }
 
   Future<void> _signUpNetworkCall(Map<String, dynamic> body) async {

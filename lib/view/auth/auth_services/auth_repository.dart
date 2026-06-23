@@ -23,6 +23,7 @@ abstract class AuthRepository {
   Future<dynamic> signInOtpResend({required Map<String, dynamic> body});
   Future<dynamic> signupWithUaePass({required Map<String, dynamic> body});
   Future<dynamic> signupWithUaePassCompleted({required Map<String, dynamic> body});
+  Future<dynamic> signUpUaePassSetPassword({required Map<String, dynamic> body});
   Future<dynamic> signInWithUaePass({required Map<String, dynamic> body});
   Future<dynamic> signInWithUaePassCompleted({required Map<String, dynamic> body});
 }

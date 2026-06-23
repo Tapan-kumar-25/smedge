@@ -85,6 +85,8 @@ abstract class AuthApiService {
       @Header("X-Device-Fingerprint") String deviceFingerprint,
       @Header("X-Device-Platform") String devicePlatform,
       );
+  @POST(ApiConstants.signUpsetPassword)
+  Future<SignupEmailModel> setSignUpUaePassPassword(@Body() Map<String,dynamic> body);
 
   @POST(ApiConstants.signInWithUAEPassInitiate)
   Future<UaePassModel> signInWithUAEPass(

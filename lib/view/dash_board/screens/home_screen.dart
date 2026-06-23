@@ -84,7 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(dashboardStateProvider).setContext(context);
       _measureHeaderHeight();
       await  _networkCall();
-      _setData();
+     await Utils.getAllData();
     });
 
   }
@@ -92,28 +92,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _networkCall() async {
     try {
       final hasInternet = await NetworkChecker.hasInternet();
-
       if (!hasInternet) {
         Utils.showErrorSnackBar(context, Strings.NO_INTERNET);
         return;
       }
       ref.read(dashboardStateProvider).setLoading(hasInternet);
-      ref.read(personalDetailsNotifier(""));
-
+     await ref.read(personalDetailsNotifier("").future);
     } catch (e) {
       debugPrint(e.toString());
     } finally {
       ref.read(dashboardStateProvider).setLoading(false);
     }
   }
-  String name = "";
-  void _setData(){
-    final dashboardState = ref.read(dashboardStateProvider);
-    if(dashboardState.personalDetailsModel != null){
-      name = dashboardState.personalDetailsModel!.identity.fullName;
-      print(name);
-    }
-  }
+
 
   void _measureHeaderHeight() {
     final ctx = _headerKey.currentContext;
@@ -267,7 +258,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             SizedBox(width: Numbers.DOUBLE_NUMBER_10),
             Expanded(
-              child: Text(name,
+              child: Text(Utils.fullName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleLarge!.copyWith(
@@ -353,7 +344,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    name,
+                    Utils.fullName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleLarge!.copyWith(

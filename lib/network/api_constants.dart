@@ -16,6 +16,7 @@ class ApiConstants {
   ///Sign Up with UAE pass///
   static const String signUpUAEPassInitiateAPI = "/auth/signup/uaepass/initiate";
   static const String signUpUAEPassCompleteAPI = "/auth/signup/uaepass/complete";
+  static const String signUpsetPassword = "/auth/signup/uaepass/set-password";
 
   /// Sign In///
  static const String signIn = "/auth/signin/password";

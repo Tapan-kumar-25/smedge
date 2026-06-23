@@ -107,6 +107,12 @@ static String signInToken = "";
     print("signInToken    =======signInToken======== $signInToken");
   }
 
+  static String fullName = "";
+  static Future<void> getFullName()async{
+    signInToken = SharedPreferenceUtils.getString(Strings.fullName);
+    print("fullName    =======fullName======== $fullName");
+  }
+
   static Future<void> getAllData() async {
     await Future.wait([
       getFingerPrint(),
@@ -116,6 +122,7 @@ static String signInToken = "";
       getRefreshToken(),
       getUserId(),
       getBusinessId(),
+      getFullName(),
     ]);
   }
 static String  fingerprint ="";
