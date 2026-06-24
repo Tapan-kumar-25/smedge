@@ -325,7 +325,7 @@ class _SignUpWithUaePassState extends ConsumerState<SignUpWithUaePass>
     if (mounted) {
       Utils.showErrorSnackBar(
         context,
-        'UAE PASS sign-in timed out. Please try again.',
+        'UAE PASS sign-up timed out. Please try again.',
       );
       setState(() => _viewState = _ViewState.error);
     }

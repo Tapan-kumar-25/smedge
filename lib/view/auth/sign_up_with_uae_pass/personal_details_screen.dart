@@ -43,7 +43,6 @@ class _PersonalDetailsScreenState extends ConsumerState<PersonalDetailsScreen> {
     }
 
   }
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -107,16 +106,6 @@ class _PersonalDetailsScreenState extends ConsumerState<PersonalDetailsScreen> {
                             contentPadding: EdgeInsets.symmetric(horizontal: Numbers.DOUBLE_NUMBER_6),
                             hintText: "Full name",
                             border: InputBorder.none,
-                            // suffixIcon: nameController.text.isNotEmpty
-                            //     ? IconButton(
-                            //   icon: const Icon(Icons.close, size: 18),
-                            //   onPressed: () {
-                            //     setState(() {
-                            //       nameController.clear();
-                            //     });
-                            //   },
-                            // )
-                            //     : null,
                           ),
                         ),
                       ),
@@ -129,44 +118,23 @@ class _PersonalDetailsScreenState extends ConsumerState<PersonalDetailsScreen> {
                       ),
                       SizedBox(height: Numbers.DOUBLE_NUMBER_6),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: CustomContainer(
-                              padding: 2,
-                              child: CountryCodePicker(
-                                initialSelection: authState.countryCode,
-                                onChanged: (value) {
-                                  authState.setCountryCode(value.dialCode ?? "+971");
-                                },
-                                padding: EdgeInsets.zero,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            flex: 6,
-                            child: CustomContainer(
-                              padding: 2,
-                              child: TextFormField(
-                                controller: numberController,
-                                keyboardType: TextInputType.number,
+                      CustomContainer(
+                        padding: 2,
+                        child: TextFormField(
+                          controller: numberController,
+                          keyboardType: TextInputType.number,
 
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(10),
-                                ],
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(horizontal: Numbers.DOUBLE_NUMBER_6),
-                                  hintText: "Mobile number",
-                                  border: InputBorder.none,
-                                ),
-
-                              ),
-                            ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(10),
+                          ],
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(horizontal: Numbers.DOUBLE_NUMBER_6),
+                            hintText: "Mobile number",
+                            border: InputBorder.none,
                           ),
-                        ],
+
+                        ),
                       ),
 
                       SizedBox(height: Numbers.DOUBLE_NUMBER_16),
@@ -246,7 +214,7 @@ class _PersonalDetailsScreenState extends ConsumerState<PersonalDetailsScreen> {
                   child: CustomElevatedButton(
                     title: "Confirm",
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.companyDetails);
+                      Navigator.pushNamed(context, AppRoutes.setPassword,);
                     },
                   ),
                 ),

@@ -228,10 +228,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     ),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
-                        Navigator.pushReplacementNamed(
-                          context,
-                          AppRoutes.signUp,
-                        );
+                        Navigator.pushReplacementNamed(context, AppRoutes.signUp);
                       },
                   ),
                 ],

@@ -56,8 +56,9 @@ class _PersonalDetailsScreenDashboardState
           dashboardState.personalDetailsModel!.identity.emiratesId.masked;
       _emailController.text =
           dashboardState.personalDetailsModel!.contact.email.masked;
-      // _phoneController.text = dashboardState.personalDetailsModel!.contact.phone.masked;
-      _splitPhone(dashboardState.personalDetailsModel!.contact.phone.masked);
+      _splitPhone(dashboardState.personalDetailsModel!.contact.phone.masked.startsWith('+')
+          ? dashboardState.personalDetailsModel!.contact.phone.masked :
+      '+${dashboardState.personalDetailsModel!.contact.phone.masked}');
       _nationalityController.text =
           dashboardState.personalDetailsModel!.identity.nationality;
       _dobController.text =
@@ -69,20 +70,56 @@ class _PersonalDetailsScreenDashboardState
     }
   }
 
+  // void _splitPhone(String phone) {
+  //   phone = phone.trim();
+  //
+  //   if (!phone.startsWith('+')) {
+  //     _countryCode = '';
+  //     _phoneController.text = phone;
+  //     return;
+  //   }
+  //
+  //   if (phone.length >= 10) {
+  //     String last9 = phone.substring(phone.length - 9);
+  //     String code9 = phone.substring(0, phone.length - 9);
+  //
+  //     String last10 = phone.length >= 11
+  //         ? phone.substring(phone.length - 10)
+  //         : '';
+  //     String code10 = phone.length >= 11
+  //         ? phone.substring(0, phone.length - 10)
+  //         : '';
+  //
+  //     if (last10.length == 10) {
+  //       _countryCode = code10;
+  //       _phoneController.text = last10;
+  //     } else {
+  //       _countryCode = code9;
+  //       _phoneController.text = last9;
+  //     }
+  //   }
+  // }
   void _splitPhone(String phone) {
-    if (phone.startsWith('+')) {
-      final match = RegExp(r'^(\+\d{1,4})').firstMatch(phone);
+    phone = phone.trim();
 
-      if (match != null) {
-        _countryCode = match.group(1)!;
-        _phoneController.text = phone.substring(_countryCode.length);
-      }
-    } else {
+    if (!phone.startsWith('+')) {
       _countryCode = '';
       _phoneController.text = phone;
+      return;
+    }
+
+    // Assume number is 10 digits if possible, otherwise 9 digits
+    String number = phone.substring(phone.length - 10);
+
+    if (number.length == 10) {
+      _countryCode = phone.substring(0, phone.length - 10);
+      _phoneController.text = number;
+    } else {
+      number = phone.substring(phone.length - 9);
+      _countryCode = phone.substring(0, phone.length - 9);
+      _phoneController.text = number;
     }
   }
-
   @override
   void dispose() {
     _fullNameController.dispose();
@@ -144,17 +181,19 @@ class _PersonalDetailsScreenDashboardState
       case "phone":
         setState(() {
           _phoneRevealed = true;
-          // _phoneController.text = dashboardState.personalDetailsModel!.contact.phone.full;
-          _splitPhone(dashboardState.personalDetailsModel!.contact.phone.full);
+          _splitPhone(dashboardState.personalDetailsModel!.contact.phone.full.startsWith('+')
+              ? dashboardState.personalDetailsModel!.contact.phone.full
+              : '+${dashboardState.personalDetailsModel!.contact.phone.full}');
         });
         Future.delayed(const Duration(seconds: 20), () {
           if (!mounted) return;
 
           setState(() {
             _phoneRevealed = false;
-            // _phoneController.text = dashboardState.personalDetailsModel!.contact.phone.masked;
             _splitPhone(
-              dashboardState.personalDetailsModel!.contact.phone.masked,
+                dashboardState.personalDetailsModel!.contact.phone.masked.startsWith('+')
+                    ? dashboardState.personalDetailsModel!.contact.phone.masked
+                    : '+${dashboardState.personalDetailsModel!.contact.phone.masked}'
             );
           });
         });

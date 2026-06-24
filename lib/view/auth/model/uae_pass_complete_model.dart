@@ -30,12 +30,14 @@ class UAEPassCompleteModel {
 
 class UAEPassCompleteData {
   final String signupSessionToken;
+  final String signInSessionToken;
   final String deviceToken;
   final String nextStep;
   final UAEPassUser? user;
 
   UAEPassCompleteData({
     required this.signupSessionToken,
+    required this.signInSessionToken,
     required this.deviceToken,
     required this.nextStep,
     this.user,
@@ -44,6 +46,7 @@ class UAEPassCompleteData {
   factory UAEPassCompleteData.fromJson(Map<String, dynamic> json) {
     return UAEPassCompleteData(
       signupSessionToken: json['signup_session_token'] ?? "",
+      signInSessionToken: json['signin_session_token'] ?? "",
       deviceToken: json['device_token'] ?? "",
       nextStep: json['next_step'] ?? "",
       user: json['user'] != null
@@ -55,6 +58,7 @@ class UAEPassCompleteData {
   Map<String, dynamic> toJson() {
     return {
       "signup_session_token": signupSessionToken,
+      "signin_session_token": signupSessionToken,
       "device_token": deviceToken,
       "next_step": nextStep,
       "user": user?.toJson(),

@@ -7,8 +7,10 @@ import 'package:smedge/utils/router/app_routes.dart';
 
 import '../../../common_files/custom_container.dart';
 import '../../../common_files/custom_elevated_button.dart';
+import '../../../common_files/network_checker.dart';
 import '../../../common_files/support_widget.dart';
 import '../../../provider/provider.dart';
+import '../auth_view_model.dart';
 
 class SetPasswordScreen extends ConsumerStatefulWidget {
   final String? previousScreen;
@@ -23,27 +25,15 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-  bool isPasswordVisible = false;
-  bool isConfirmPasswordVisible = false;
-  bool hasMinLength = false;
-  bool hasUppercase = false;
-  bool hasDigit = false;
-  bool hasSpacialCharacter = false;
-
   @override
   void initState() {
+    Utils.getSignUpSession();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(authProvider).setContext(context);
     });
     super.initState();
     passwordController.addListener(() {
-      final value = passwordController.text;
-      setState(() {
-        hasMinLength = value.length >= 8;
-        hasUppercase = RegExp(r'[A-Z]').hasMatch(value);
-        hasDigit = RegExp(r'[0-9]').hasMatch(value);
-        hasSpacialCharacter = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value);
-      });
+      ref.read(authProvider).validatePassword(passwordController.text);
     });
   }
 
@@ -136,7 +126,7 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: TextFormField(
                       controller: passwordController,
-                      obscureText: !isPasswordVisible,
+                      obscureText: !authState.isPasswordVisible,
                       style: theme.textTheme.titleMedium,
                       textAlignVertical: TextAlignVertical.center,
                       decoration: InputDecoration(
@@ -147,14 +137,12 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                         border: InputBorder.none,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            isPasswordVisible
+                            authState.isPasswordVisible
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                           ),
                           onPressed: () {
-                            setState(() {
-                              isPasswordVisible = !isPasswordVisible;
-                            });
+                           authState.togglePasswordVisibility();
                           },
                         ),
                       ),
@@ -169,7 +157,7 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: TextFormField(
                       controller: confirmPasswordController,
-                      obscureText: !isConfirmPasswordVisible,
+                      obscureText: !authState.isConfirmPasswordVisible,
                       style: theme.textTheme.titleMedium,
                       textAlignVertical: TextAlignVertical.center,
                       decoration: InputDecoration(
@@ -180,15 +168,12 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                         border: InputBorder.none,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            isConfirmPasswordVisible
+                            authState.isConfirmPasswordVisible
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                           ),
                           onPressed: () {
-                            setState(() {
-                              isConfirmPasswordVisible =
-                                  !isConfirmPasswordVisible;
-                            });
+                           authState.toggleConfirmPasswordVisibility();
                           },
                         ),
                       ),
@@ -197,63 +182,99 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                 ),
 
                 SizedBox(height: Numbers.DOUBLE_NUMBER_16),
-                buildValidationItem(hasMinLength, "At least 8 characters"),
-                const SizedBox(height: 6),
-                buildValidationItem(hasUppercase, "One uppercase letter"),
-                const SizedBox(height: 6),
-                buildValidationItem(hasDigit, "One digit"),
-                const SizedBox(height: 6),
-                buildValidationItem(hasSpacialCharacter, "One special character"),
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: buildValidationItem(
+                            authState.hasUppercase,
+                            "One uppercase letter",
+                          ),
+                        ),
+                        Expanded(
+                          child: buildValidationItem(
+                            authState.hasDigit,
+                            "One digit",
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: Numbers.DOUBLE_NUMBER_6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: buildValidationItem(
+                            authState.hasSpecialCharacter,
+                            "One special character",
+                          ),
+                        ),
+                        Expanded(
+                          child: buildValidationItem(
+                            authState.hasMinLength,
+                            "At least 8 characters",
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
                 Padding(
                   padding: EdgeInsets.all(Numbers.DOUBLE_NUMBER_16),
                   child: SizedBox(
                     width: double.infinity,
-                    child: CustomElevatedButton(
-                      title: "Confirm",
-                      onPressed: () {
-                        final password = passwordController.text.trim();
-                        final confirmPassword = confirmPasswordController.text
-                            .trim();
-                        if (password.isEmpty || confirmPassword.isEmpty) {
-                          Utils.showSnackBar(
-                            context,
-                            "Please fill all fields",
-                            Colors.red,
-                          );
-                          return;
-                        }
-                        if (!hasMinLength || !hasUppercase || !hasDigit || !hasSpacialCharacter) {
-                          Utils.showSnackBar(
-                            context,
-                            "Password does not meet requirements",
-                            Colors.red,
-                          );
-                          return;
-                        }
-                        if (password != confirmPassword) {
-                          Utils.showSnackBar(
-                            context,
-                            "Passwords do not match",
-                            Colors.red,
-                          );
-                          return;
-                        }
-
-                        /// API call
-                        if (widget.previousScreen == "") {
-                          Navigator.pushReplacementNamed(
-                            context,
-                            AppRoutes.identity,
-                            arguments: passwordController.text,
-                          );
-                        } else {
-                          Navigator.pushReplacementNamed(
-                            context,
-                            AppRoutes.signIn,
-                          );
-                        }
-                      },
-                    ),
+                    child: authState.isLoading
+                        ? Center(child: CircularProgressIndicator())
+                        : CustomElevatedButton(
+                            title: "Confirm",
+                            onPressed: () {
+                              final password = passwordController.text.trim();
+                              final confirmPassword = confirmPasswordController
+                                  .text
+                                  .trim();
+                              if (password.isEmpty || confirmPassword.isEmpty) {
+                                Utils.showSnackBar(
+                                  context,
+                                  "Please fill all fields",
+                                  Colors.red,
+                                );
+                                return;
+                              }
+                              if (!authState.hasMinLength ||
+                                  !authState.hasUppercase ||
+                                  !authState.hasDigit ||
+                                  !authState.hasSpecialCharacter) {
+                                Utils.showSnackBar(
+                                  context,
+                                  "Password does not meet requirements",
+                                  Colors.red,
+                                );
+                                return;
+                              }
+                              if (password != confirmPassword) {
+                                Utils.showSnackBar(
+                                  context,
+                                  "Passwords do not match",
+                                  Colors.red,
+                                );
+                                return;
+                              }
+                              /// API call
+                              if (widget.previousScreen == "") {
+                                Map<String, dynamic> body = {
+                                  "signup_session_token":Utils.signUpSession,
+                                  "password":passwordController.text,
+                                  "confirm_password":confirmPasswordController.text
+                                };
+                                _setPasswordNetworkCall(body);
+                              } else {
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  AppRoutes.signIn,
+                                );
+                              }
+                            },
+                          ),
                   ),
                 ),
                 SupportWidget(context: context),
@@ -288,5 +309,22 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _setPasswordNetworkCall(Map<String, dynamic> body) async {
+    try {
+      final hasInternet = await NetworkChecker.hasInternet();
+
+      if (!hasInternet) {
+        Utils.showSnackBar(context, Strings.NO_INTERNET, Colors.red);
+        return;
+      }
+      ref.read(authProvider).setLoading(hasInternet);
+      await ref.read(signUpSetPasswordProvider(body).future);
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      ref.read(authProvider).setLoading(false);
+    }
   }
 }

@@ -80,7 +80,9 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final response = await apiService.initiateKyc({
         "signup_session_token": signupSessionToken,
-      });
+      }, "1",
+        "test-device-fp-001",
+        platform,);
       return response;
     } catch (e) {
       throw ErrorHandler.handle(e);
@@ -90,7 +92,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<dynamic> kycComplete(Map<String, dynamic> body) async {
     try {
-      final response = await apiService.kycComplete(body);
+      final response = await apiService.kycComplete(body, "1",
+        "test-device-fp-001",
+        platform,);
       return response;
     } catch (e) {
       throw ErrorHandler.handle(e);
@@ -202,6 +206,52 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       final response = await apiService.signUpWithUAEPassCompleted(
+        body,
+        "1",
+        "test-device-fp-001",
+        platform,
+      );
+      return response;
+    } catch (e) {
+      throw ErrorHandler.handle(e);
+    }
+  }
+  @override
+  Future<dynamic> signUpUaePassSetPassword({
+    required Map<String, dynamic> body,
+  }) async {
+    try {
+      final response = await apiService.setSignUpUaePassPassword(body);
+      return response;
+    } catch (e) {
+      throw ErrorHandler.handle(e);
+    }
+  }
+
+
+  @override
+  Future<dynamic> signInWithUaePass({
+    required Map<String, dynamic> body,
+  }) async {
+    try {
+      final response = await apiService.signInWithUAEPass(
+        body,
+        "1",
+        "test-device-fp-001",
+        platform,
+      );
+      return response;
+    } catch (e) {
+      throw ErrorHandler.handle(e);
+    }
+  }
+
+  @override
+  Future<dynamic> signInWithUaePassCompleted({
+    required Map<String, dynamic> body,
+  }) async {
+    try {
+      final response = await apiService.signInWithUAEPassCompleted(
         body,
         "1",
         "test-device-fp-001",

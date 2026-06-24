@@ -182,13 +182,23 @@ class _AuthApiService implements AuthApiService {
   }
 
   @override
-  Future<dynamic> initiateKyc(Map<String, dynamic> body) async {
+  Future<UaePassModel> initiateKyc(
+    Map<String, dynamic> body,
+    String integrity,
+    String deviceFingerprint,
+    String devicePlatform,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
+    final _headers = <String, dynamic>{
+      r'X-Device-Integrity': integrity,
+      r'X-Device-Fingerprint': deviceFingerprint,
+      r'X-Device-Platform': devicePlatform,
+    };
+    _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options = _setStreamType<dynamic>(
+    final _options = _setStreamType<UaePassModel>(
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -198,19 +208,35 @@ class _AuthApiService implements AuthApiService {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final _result = await _dio.fetch(_options);
-    final _value = _result.data;
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UaePassModel _value;
+    try {
+      _value = UaePassModel.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
     return _value;
   }
 
   @override
-  Future<dynamic> kycComplete(Map<String, dynamic> body) async {
+  Future<UAEPassCompleteModel> kycComplete(
+    Map<String, dynamic> body,
+    String integrity,
+    String deviceFingerprint,
+    String devicePlatform,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
+    final _headers = <String, dynamic>{
+      r'X-Device-Integrity': integrity,
+      r'X-Device-Fingerprint': deviceFingerprint,
+      r'X-Device-Platform': devicePlatform,
+    };
+    _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options = _setStreamType<dynamic>(
+    final _options = _setStreamType<UAEPassCompleteModel>(
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -220,8 +246,14 @@ class _AuthApiService implements AuthApiService {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final _result = await _dio.fetch(_options);
-    final _value = _result.data;
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UAEPassCompleteModel _value;
+    try {
+      _value = UAEPassCompleteModel.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
     return _value;
   }
 
@@ -452,6 +484,112 @@ class _AuthApiService implements AuthApiService {
           .compose(
             _dio.options,
             '/auth/signup/uaepass/complete',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UAEPassCompleteModel _value;
+    try {
+      _value = UAEPassCompleteModel.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<SignupEmailModel> setSignUpUaePassPassword(
+    Map<String, dynamic> body,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options = _setStreamType<SignupEmailModel>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/auth/signup/uaepass/set-password',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late SignupEmailModel _value;
+    try {
+      _value = SignupEmailModel.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<UaePassModel> signInWithUAEPass(
+    Map<String, dynamic> body,
+    String integrity,
+    String deviceFingerprint,
+    String devicePlatform,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{
+      r'X-Device-Integrity': integrity,
+      r'X-Device-Fingerprint': deviceFingerprint,
+      r'X-Device-Platform': devicePlatform,
+    };
+    _headers.removeWhere((k, v) => v == null);
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options = _setStreamType<UaePassModel>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/auth/signin/uaepass/initiate',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UaePassModel _value;
+    try {
+      _value = UaePassModel.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<UAEPassCompleteModel> signInWithUAEPassCompleted(
+    Map<String, dynamic> body,
+    String integrity,
+    String deviceFingerprint,
+    String devicePlatform,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{
+      r'X-Device-Integrity': integrity,
+      r'X-Device-Fingerprint': deviceFingerprint,
+      r'X-Device-Platform': devicePlatform,
+    };
+    _headers.removeWhere((k, v) => v == null);
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options = _setStreamType<UAEPassCompleteModel>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/auth/signin/uaepass/complete',
             queryParameters: queryParameters,
             data: _data,
           )

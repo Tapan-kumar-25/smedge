@@ -16,11 +16,15 @@ class ApiConstants {
   ///Sign Up with UAE pass///
   static const String signUpUAEPassInitiateAPI = "/auth/signup/uaepass/initiate";
   static const String signUpUAEPassCompleteAPI = "/auth/signup/uaepass/complete";
+  static const String signUpsetPassword = "/auth/signup/uaepass/set-password";
 
   /// Sign In///
  static const String signIn = "/auth/signin/password";
  static const String signInOtpVerification = "/auth/signin/email/verify";
  static const String signInOtpResend = "/auth/signin/otp/resend";
+ static const String signInWithUAEPassInitiate = "/auth/signin/uaepass/initiate";
+ static const String signInWithUAEPassCompleted = "/auth/signin/uaepass/complete";
+
 
  ///personal details///
  static const String personalDetails = "/profile/personal";

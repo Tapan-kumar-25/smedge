@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:smedge/constants/strings.dart';
+import 'package:smedge/utils/shared_preference_utils.dart';
 import 'model/company_model.dart';
 import 'model/personal_details_screen.dart';
 
@@ -78,9 +80,13 @@ void setLoading(bool loading){
   }
 void setPersonalDetails(PersonalDetailsModel data){
   _personalDetailsModel = data;
+  setData();
   notifyListeners();
 }
-
+void setData()async{
+  await SharedPreferenceUtils.setString(Strings.fullName, _personalDetailsModel?.identity.fullName??"");
+  notifyListeners();
+}
 
   // ── Company Actions ──────────────────────────────────────────────────────────
   void addCompany(CompanyModel company) {

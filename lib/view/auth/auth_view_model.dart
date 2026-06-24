@@ -40,15 +40,14 @@ FutureProvider.autoDispose<dynamic>((ref) async {
    if(response != null){
      final data = SignupEmailModel.fromJson(response);
      if (data.data != null) {
+       if(data.data!.accessToken != ""){
        SharedPreferenceUtils.setString(
-         Strings.ACCESS_TOKEN,
-         data.data!.accessToken ?? "",
-       );
-
+         Strings.ACCESS_TOKEN, data.data!.accessToken ?? "",);}
+      if(data.data!.refreshToken !=""){
        SharedPreferenceUtils.setString(
          Strings.REFRESH_TOKEN,
          data.data!.refreshToken ?? "",
-       );
+       );}
        print("Access Token Saved");
        print("Refresh Token Saved");
    }}
@@ -220,11 +219,11 @@ family<SignupEmailModel, Map<String, dynamic>>((ref, body)async{
 
 
 final uaePassVerification = FutureProvider.family.
-autoDispose<dynamic, String>((ref, signUpToken) async {
+autoDispose<UaePassModel, String>((ref, signUpToken) async {
   final authState = ref.watch(authProvider);
   final repository = ref.watch(authRepositoryProvider);
   try {
-    var response = repository.initiateKyc(signupSessionToken: signUpToken);
+    var response = await repository.initiateKyc(signupSessionToken: signUpToken);
     return response;
   } on AppException catch (e) {
     Utils.showSnackBar(authState.context, e.message, Colors.red);
@@ -234,6 +233,36 @@ autoDispose<dynamic, String>((ref, signUpToken) async {
     Utils.showSnackBar(authState.context, "Something went wrong", Colors.red);
 
     throw AppException(message: "Something went wrong", errorCode: "UNKNOWN");
+  }
+});
+
+final signUpUaePassCompleteProvider = FutureProvider.family.
+autoDispose<UAEPassCompleteModel, Map<String,dynamic>>((ref, body)async{
+  final authState = ref.watch(authProvider);
+  final repository = ref.watch(authRepositoryProvider);
+  try{
+    var response =await repository.kycComplete(body);
+    print("response ====== ]]] ==== ${response.data?.user}");
+    authState.setUAEPassCompleteData(response);
+    final token = response.data?.signupSessionToken;
+    if(token != null){
+      await SharedPreferenceUtils.setString(Strings.SIGNUP_SESSION, token);
+      // await  SharedPreferenceUtils.setString("SIGNUP_SESSION_EXPIRY", DateTime.now().toString());
+      Utils.showSnackBar(authState.context, "UAE pass Verification Completed", Colors.green);
+      await Utils.getSignUpSession();
+      authState.loadUAEPassCompleteData();
+      Navigator.pushReplacementNamed(authState.context, AppRoutes.companyDetails);
+    }
+    return response;
+  }on AppException catch(e){
+    authState.setError(e.message);
+    Utils.showErrorSnackBar(authState.context, e.message);
+    rethrow;
+  } catch (e) {
+    Utils.showErrorSnackBar(authState.context,"Something went wrong");
+    throw AppException(message: "Something went wrong", errorCode: "UNKNOWN");
+  } finally {
+    authState.setUaePassLoading(false);
   }
 });
 
@@ -296,7 +325,7 @@ autoDispose<ResumeSignupModel>((ref) async {
       Navigator.pushReplacementNamed(authState.context, AppRoutes.numberEmailVerify);
     // } else if (currentStep == "PHONE_VERIFY") {
     //   Navigator.pushReplacementNamed(authState.context, AppRoutes.identity);
-    } else if (currentStep == "NATIONAL_ID" || currentStep =="KYC") {
+    } else if (currentStep == "NATIONAL_ID" || currentStep =="KYC" || currentStep =="PERSONAL_INFO") {
       Navigator.pushReplacementNamed(
         authState.context,
         AppRoutes.idVerification,
@@ -376,22 +405,25 @@ final saveCompanyDetails = FutureProvider.family.autoDispose
               Colors.green,
             );
             authState.setCurrentIndex(0);
-            SharedPreferenceUtils.setString(
+            await SharedPreferenceUtils.setString(
               Strings.ACCESS_TOKEN,
               data.data!.accessToken ?? "",
             );
 
-            SharedPreferenceUtils.setString(
+           await SharedPreferenceUtils.setString(
               Strings.REFRESH_TOKEN,
               data.data!.refreshToken ?? "",
             );
-
-            SharedPreferenceUtils.setInt(
+            await  SharedPreferenceUtils.setString(
+              Strings.SIGN_IN_SESSION,
+              data.data!.signInSessionToken ?? "",
+            );
+         await   SharedPreferenceUtils.setInt(
               Strings.USER_ID,
               data.data!.userId ?? 0,
             );
 
-            SharedPreferenceUtils.setInt(
+           await SharedPreferenceUtils.setInt(
               Strings.BUSINESS_ID,
               data.data!.businessId ?? 0,
             );
@@ -496,8 +528,28 @@ final signInOtpVerificationNotifier = FutureProvider.family.autoDispose
           Strings.SIGN_IN_SESSION,
           data.data!.signInSessionToken ?? "",
         );
+        if(data.data!.accessToken != ""){
+      await  SharedPreferenceUtils.setString(
+          Strings.ACCESS_TOKEN,
+          data.data!.accessToken ?? "",
+        );}
+        if(data.data!.refreshToken !=""){
+     await   SharedPreferenceUtils.setString(
+          Strings.REFRESH_TOKEN,
+          data.data!.refreshToken ?? "",
+        );}
+        if(data.data!.userId !=0){
+    await    SharedPreferenceUtils.setInt(
+          Strings.USER_ID,
+          data.data!.userId ?? 0,
+        );}
+        if(data.data!.businessId != 0){
+       await SharedPreferenceUtils.setInt(
+          Strings.BUSINESS_ID,
+          data.data!.businessId ?? 0,
+        );}
         await  SharedPreferenceUtils.setBool(Strings.IS_LOGIN, true);
-        await Utils.getSignInToken();
+        await Utils.getAllData();
         Navigator.pushNamedAndRemoveUntil(
           authState.context,
           AppRoutes.dashboard,
@@ -595,6 +647,109 @@ autoDispose<UAEPassCompleteModel, Map<String,dynamic>>((ref, body)async{
       await Utils.getSignUpSession();
       authState.loadUAEPassCompleteData();
       Navigator.pushReplacementNamed(authState.context, AppRoutes.personalDetails);
+    }
+    return response;
+  }on AppException catch(e){
+    authState.setError(e.message);
+    Utils.showErrorSnackBar(authState.context, e.message);
+    rethrow;
+  } catch (e) {
+    Utils.showErrorSnackBar(authState.context,"Something went wrong");
+    throw AppException(message: "Something went wrong", errorCode: "UNKNOWN");
+  } finally {
+    authState.setUaePassLoading(false);
+  }
+});
+
+final signUpSetPasswordProvider = FutureProvider.family.
+autoDispose<SignupEmailModel, Map<String,dynamic>>((ref, body)async{
+  final authState = ref.watch(authProvider);
+  final repository = ref.watch(authRepositoryProvider);
+  try{
+    var response =await repository.signUpUaePassSetPassword(body: body);
+    var data = SignupEmailModel.fromJson(response);
+    final token = data.data?.signupSessionToken;
+    if(token != null){
+      await SharedPreferenceUtils.setString(Strings.SIGNUP_SESSION, token);
+      Utils.showSnackBar(authState.context, "Password saved successfully", Colors.green);
+      await Utils.getSignUpSession();
+      Navigator.pushReplacementNamed(authState.context, AppRoutes.companyDetails);
+    }
+    return response;
+  }on AppException catch(e){
+    authState.setError(e.message);
+    Utils.showErrorSnackBar(authState.context, e.message);
+    rethrow;
+  } catch (e) {
+    Utils.showErrorSnackBar(authState.context,"Something went wrong");
+    throw AppException(message: "Something went wrong", errorCode: "UNKNOWN");
+  } finally {
+    authState.setUaePassLoading(false);
+  }
+});
+
+
+final signInWithUAEPassNotifier = FutureProvider.family.
+autoDispose<UaePassModel, Map<String,dynamic>>((ref, body)async{
+  final authState = ref.watch(authProvider);
+  final repository = ref.watch(authRepositoryProvider);
+  try{
+    var response =await repository.signInWithUaePass(body: body);
+    print("===== Response ===== $response } =======");
+    return response;
+  }on AppException catch(e){
+    authState.setError(e.message);
+    Utils.showErrorSnackBar(authState.context, e.message);
+    rethrow;
+  } catch (e) {
+    Utils.showErrorSnackBar(authState.context,"Something went wrong");
+    throw AppException(message: "Something went wrong", errorCode: "UNKNOWN");
+  } finally {
+    authState.setUaePassLoading(false);
+  }
+});
+
+final signInUaePassCompleteProvider = FutureProvider.family.
+autoDispose<UAEPassCompleteModel, Map<String,dynamic>>((ref, body)async{
+  final authState = ref.watch(authProvider);
+  final repository = ref.watch(authRepositoryProvider);
+  try{
+    var response =await repository.signInWithUaePassCompleted(body: body);
+    print("response ====== ]]] ==== ${response.data?.user}");
+    authState.setUAEPassCompleteData(response);
+    final token = response.data?.data.signInSessionToken;
+    final data = UAEPassCompleteModel.fromJson(response);
+    if(token != null){
+      Utils.showSnackBar(authState.context, "UAE pass Verification Completed", Colors.green);
+      authState.loadUAEPassCompleteData();
+      await  SharedPreferenceUtils.setString(
+        Strings.SIGN_IN_SESSION,
+        token ?? "",
+      );
+      // if(data.accessToken != ""){
+      //   await  SharedPreferenceUtils.setString(
+      //     Strings.ACCESS_TOKEN,
+      //     data.accessToken ?? "",
+      //   );}
+      // if(data.refreshToken !=""){
+      //   await   SharedPreferenceUtils.setString(
+      //     Strings.REFRESH_TOKEN,
+      //     data.refreshToken ?? "",
+      //   );}
+      if(data.data!.user!.customerId !=""){
+        await    SharedPreferenceUtils.setInt(
+          Strings.USER_ID,
+          int.parse(data.data!.user!.customerId),
+        );}
+      // if(data.data!.user!. != 0){
+      //   await SharedPreferenceUtils.setInt(
+      //     Strings.BUSINESS_ID,
+      //     response.data.data!.businessId ?? 0,
+      //   );}
+
+      await  SharedPreferenceUtils.setBool(Strings.IS_LOGIN, true);
+      await Utils.getSignInToken();
+      Navigator.pushReplacementNamed(authState.context, AppRoutes.dashboard);
     }
     return response;
   }on AppException catch(e){
